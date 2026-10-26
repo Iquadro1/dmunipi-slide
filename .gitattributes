@@ -1,0 +1,26 @@
+# Keep private/backup versions out of public release exports.
+beamerthemedmpisa_old.sty export-ignore
+
+# Keep unused artifacts out of public release exports.
+assets/stencil_build.svg export-ignore
+assets/stencil.pdf_tex export-ignore
+assets/stencil.pdf export-ignore
+assets/logo_white_stencil.png export-ignore
+
+# Build artifacts (normally ignored; also excluded from git archive).
+*.aux export-ignore
+*.bbl export-ignore
+*.bcf export-ignore
+*.blg export-ignore
+*.fdb_latexmk export-ignore
+*.fls export-ignore
+*.log export-ignore
+*.nav export-ignore
+*.out export-ignore
+*.run.xml export-ignore
+*.snm export-ignore
+*.synctex export-ignore
+*.synctex.gz export-ignore
+*.toc export-ignore
+*.vrb export-ignore
+*.xdv export-ignore

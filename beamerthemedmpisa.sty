@@ -3,10 +3,13 @@
 % Adapted by Mattia Ippoliti for Politecnico di Torino and Andrea Gasparini for Sapienza
 % and Fabio Durastante for DM UNIPI
 %
-% 
+%
 % Original template by Federico Zenith, federico.zenith@sintef.no.
 % Derived (through several iterations) from Håvard Berland's
 % beamerthementnu class.
+%
+% The theme can be recoloured by redefining maincolor; the department logos
+% are drawn as vector TikZ paths and follow the chosen colour.
 %
 %
 % This program is free software: you can redistribute it and/or modify
@@ -22,12 +25,7 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-\newif\ifbeamer@headerlesstheorems
-\beamer@headerlesstheoremsfalse
-\DeclareOptionBeamer{headerlesstheorems}{\beamer@headerlesstheoremstrue}
-\ProcessOptionsBeamer
-
-\ProvidesPackage{beamerthemedmpisa}[2023/06/29]
+\ProvidesPackage{beamerthemedmpisa}[2026/10/19 Rainbow DM Pisa Theme]
 
 \RequirePackage{etoolbox}
 \RequirePackage{tikz}
@@ -40,71 +38,179 @@
 \RequirePackage{caladea,carlito}
 \renewcommand{\familydefault}{\sfdefault}
 
-\RequirePackage{graphicx,dmpisacolor}
+\RequirePackage{graphicx,xcolor,dmpisacolor}
+
+% Headerless theorem style
+\newif\ifbeamer@headerlesstheorems
+\DeclareOptionBeamer{headerlesstheorems}{\beamer@headerlesstheoremstrue}
+
+% Footline subtitle in the default payoff (off by default; it can also be toggled inside the document with \footlinesubtitletrue/\footlinesubtitlefalse)
+\newif\iffootlinesubtitle
+\DeclareOptionBeamer{footlinesubtitle}{\footlinesubtitletrue}
+
+% Colours
+% Every coloured element is derived from maincolor (defined in dmpisacolor.sty). Change it in the preamble with \colorlet or \definecolor; the block tint and the logos follow automatically.
+\ProcessOptionsBeamer
+
+% Department logos
+% The wordmark and the shield are vector paths filled with the requested colour. Their data is kept in assets/logo-vector.tex so that this file stays readable; regenerate it with svg2tikz from the SVG sources if needed.
+\input{assets/logo-vector.tex}
+
+% The maincolor and white versions are typeset once, on first use, and the resulting boxes are reused afterwards. This avoids re-parsing the vector paths on every frame. Set maincolor in the preamble, before the first logo is used. Other colours (and other wordmark widths) are drawn directly.
+\newsavebox{\dmpisa@shieldmainbox}
+\newsavebox{\dmpisa@shieldwhitebox}
+\newsavebox{\dmpisa@wordmarkmainbox}
+\newsavebox{\dmpisa@wordmarkwhitebox}
+
+% \deptlogo[<width>]{<color>} draws the department wordmark
+% (default width: 0.3\paperwidth)
+\newcommand{\deptlogo}[2][0.3\paperwidth]{
+  \ifstrequal{#1}{0.3\paperwidth}{
+    \ifstrequal{#2}{maincolor}{
+      \ifvoid\dmpisa@wordmarkmainbox
+        \global\setbox\dmpisa@wordmarkmainbox=\hbox{\vectorwordmark[#1]{#2}}
+      \fi
+      \usebox{\dmpisa@wordmarkmainbox}
+    }{
+      \ifstrequal{#2}{white}{
+        \ifvoid\dmpisa@wordmarkwhitebox
+          \global\setbox\dmpisa@wordmarkwhitebox=\hbox{\vectorwordmark[#1]{#2}}
+        \fi
+        \usebox{\dmpisa@wordmarkwhitebox}
+      }{
+        \vectorwordmark[#1]{#2}
+      }
+    }
+  }{
+    \vectorwordmark[#1]{#2}
+  }
+}
+
+% \dynamicshield{<color>} draws the University of Pisa shield in the given colour; the raisebox keeps the headline alignment of the old logo
+\newcommand{\dynamicshield}[1]{
+  \ifstrequal{#1}{maincolor}{
+    \ifvoid\dmpisa@shieldmainbox
+      \global\setbox\dmpisa@shieldmainbox=\hbox{
+        \raisebox{-0.0636\paperwidth}{\vectorshield{#1}}
+      }
+    \fi
+    \usebox{\dmpisa@shieldmainbox}
+  }{
+    \ifstrequal{#1}{white}{
+      \ifvoid\dmpisa@shieldwhitebox
+        \global\setbox\dmpisa@shieldwhitebox=\hbox{
+          \raisebox{-0.0636\paperwidth}{\vectorshield{#1}}
+        }
+      \fi
+      \usebox{\dmpisa@shieldwhitebox}
+    }{
+      \raisebox{-0.0636\paperwidth}{\vectorshield{#1}}
+    }
+  }
+}
+
+% Headline logo
+\newcommand{\@logo}{\dynamicshield{maincolor}}
 
 % No navigation symbols
 \setbeamertemplate{navigation symbols}{}
 
 \newcommand{\@footlineauthor}{\insertauthor \enspace$\vert$\enspace}
-\newcommand{\@footlinepayoff}{\@footlineauthor\inserttitle}
-\newcommand{\footlinepayoff}[1]{\renewcommand{\@footlinepayoff}{#1}}
+% Set \footlinesubtitletrue to add the document subtitle to the default payoff
+\newcommand{\@footlinepayoffdefault}{%
+  \@footlineauthor\inserttitle
+  \iffootlinesubtitle
+    \ifx\insertsubtitle\@empty\else:\,\insertsubtitle\fi
+  \fi
+}
+% Whether a payoff is shown at all; it can also be shown on a transparent footline
+\newif\ifdmpisa@footlinepayoff
+\newcommand{\@footlinepayoff}{}
+% \footlinepayoff{<text>} sets a custom payoff, \footlinepayoff{} suppresses it, and the starred form \footlinepayoff* restores the default author|title text.
+\newcommand{\footlinepayoff}{%
+  \@ifstar{\dmpisa@footlinepayoffreset}{\dmpisa@footlinepayoffset}%
+}
+\newcommand{\dmpisa@footlinepayoffreset}{\dmpisa@footlinepayoffset{\@footlinepayoffdefault}}
+\newcommand{\dmpisa@footlinepayoffset}[1]{%
+  \renewcommand{\@footlinepayoff}{#1}%
+  \dmpisa@footlinepayofftrue
+}
+
 % Define footline content
 \setbeamertemplate{footline}{%
   \begin{beamercolorbox}[wd=\textwidth,ht=5mm,dp=3mm,rightskip=1cm,leftskip=1cm]{footline}
   \insertframenumber/\inserttotalframenumber
-  \ifstrempty{\@footlinepayoff}{}{%
+  \ifdmpisa@footlinepayoff
     \usebeamerfont{footline}\hfill\@footlinepayoff
-  }
+  \fi
   \end{beamercolorbox}
 }
 
-% Set footline AND coordinate blocks with it
-\newcommand{\footlinecolor}[1]{% if #1 is empty, makes footline transparent
+% Set footline and coordinate blocks with it; an empty colour restores the transparent, payoff-free footline
+\newcommand{\footlinecolor}[1]{%
   \ifstrempty{#1}{%
-    \footlinepayoff{}
-    \setbeamercolor{footline}{fg=darkgray, bg=}
+    \dmpisa@footlinepayofffalse
+    \renewcommand{\@footlinepayoff}{}%
+    \ifdmpisa@inverted
+      \setbeamercolor{footline}{fg=white, bg=}
+    \else
+      \setbeamercolor{footline}{fg=darkgray, bg=}
+    \fi
     \setbeamercolor{block title}{fg=white,bg=maincolor}
     \setbeamercolor{block body}{fg=white,bg=maincolor}
-  }{
-    \footlinepayoff{\@footlineauthor\inserttitle}
+  }{%
+    \ifdmpisa@footlinepayoff\else\dmpisa@footlinepayoffreset\fi
     \setbeamercolor{footline}{fg=white,bg=#1}
     \setbeamercolor{block title}{fg=white,bg=#1}
     \setbeamercolor{block body}{fg=white,bg=#1}
   }%
 }
-\footlinecolor{} % Default: no footline
 
-\pgfdeclareimage[width=0.09\paperwidth]{logo}{assets/logo_RGB}
-\pgfdeclareimage[width=0.09\paperwidth]{whitelogo}{assets/logo_RGB_negative}
-\newcommand{\@logo}{logo}
+% Put the logo in each slide's top left area
+\setbeamertemplate{headline}{\hspace{0.06\textwidth}\@logo}
 
 % Set colours
-% NOTE! Beamer colors should be set in the preamble. It often works fine in the 
-%       document itself, but NOT for normal text foreground.
-%       \themecolor should only be called from the preamble.
+% NOTE! Beamer colors should be set in the preamble. It often works fine in the document itself, but NOT for normal text foreground.
+% \themecolor should only be called from the preamble.
+
+\colorlet{secondcolor}{maincolor!6!white}
+% maincolor is usually changed in the preamble, after this package is loaded, so recompute the block tint once the preamble is complete.
+\AtBeginDocument{\colorlet{secondcolor}{maincolor!6!white}}
+
+% Whether the inverted (maincolor) style is active; used to pick the default title background and to flip the chapter style
+\newif\ifdmpisa@inverted
+
 \newcommand{\themecolor}[1]{
-	\ifstrequal{#1}{main}{%
-        \setbeamercolor{footline}{fg=white}
-		\setbeamercolor{normal text}{fg=white,bg=maincolor}
-		\setbeamercolor{structure}{fg=white}
-		\renewcommand{\@logo}{whitelogo}
-		\setbeamercolor{block title}{fg=maincolor,bg=sintefgrey}
-		\setbeamercolor{block body}{fg=darkgray,bg=sintefgrey}
-	}{%
-        \setbeamercolor{footline}{fg=darkgray}
-		\setbeamercolor{normal text}{fg=darkgray,bg=white}
-		\setbeamercolor{structure}{fg=maincolor}
-		\renewcommand{\@logo}{logo}
-		\setbeamercolor{block title}{fg=white,bg=maincolor}
-		\setbeamercolor{block body}{fg=darkgray,bg=sintefgrey}
-	}
+  \ifstrequal{#1}{main}{%
+    \dmpisa@invertedtrue
+    \setbeamercolor{footline}{fg=white}
+    \setbeamercolor{normal text}{fg=white,bg=maincolor}
+    \setbeamercolor{structure}{fg=white}
+    \setbeamercolor{frametitle}{fg=white}
+    \renewcommand{\@logo}{\dynamicshield{white}}
+    \setbeamercolor{block title}{fg=maincolor,bg=secondcolor}
+    \setbeamercolor{block body}{fg=darkgray,bg=secondcolor}
+    \setbeamercolor{title}{fg=white,bg=}
+    \setbeamercolor{author}{fg=white}
+    \setbeamercolor{date}{fg=white}
+  }{%
+    \dmpisa@invertedfalse
+    \setbeamercolor{footline}{fg=darkgray}
+    \setbeamercolor{normal text}{fg=darkgray,bg=white}
+    \setbeamercolor{structure}{fg=maincolor}
+    \setbeamercolor{frametitle}{fg=maincolor}
+    \renewcommand{\@logo}{\dynamicshield{maincolor}}
+    \setbeamercolor{block title}{fg=white,bg=maincolor}
+    \setbeamercolor{block body}{fg=darkgray,bg=secondcolor}
+    \setbeamercolor{title}{fg=maincolor,bg=}
+    \setbeamercolor{author}{fg=black}
+    \setbeamercolor{date}{fg=black}
+  }
 }
 \themecolor{white} % Default: white theme
 
-\setbeamercolor{title}{fg=maincolor,bg=white}
+% The title box is transparent by default, so custom backgrounds show through
 \setbeamercolor{alerted text}{fg=sintefred}
-\setbeamercolor{author}{fg=black}
-\setbeamercolor{date}{fg=black}
 
 \setbeamerfont{author}{size=\scriptsize}
 \setbeamerfont{date}{size=\tiny}
@@ -124,17 +230,14 @@
 \setbeamertemplate{itemize subsubitem}{\ensuremath{\circ}}
 
 \newenvironment{colorblock}[3][white]{%
-	\begingroup
-	\setbeamercolor{block title}{fg=#1,bg=#2}
-	\setbeamercolor{block body} {fg=#1,bg=#2}
-	\begin{block}{#3}
-	}{%
-	\end{block}
-	\endgroup
+  \begingroup
+  \setbeamercolor{block title}{fg=#1,bg=#2}
+  \setbeamercolor{block body} {fg=#1,bg=#2}
+  \begin{block}{#3}
+  }{%
+  \end{block}
+  \endgroup
 }
-
-% Put the logo in each slide's top left area
-\setbeamertemplate{headline}{\hspace{0.06\textwidth}\pgfuseimage{\@logo}}
 
 % Define frame title and subtitle layout
 \setbeamertemplate{frametitle}{%
@@ -147,67 +250,105 @@
 
 \def\@courseLabel{}
 \def\@IDnumber{}
-
 \newcommand{\course}[1]{\def\@courseLabel{#1}}
 \newcommand{\IDnumber}[1]{\def\@IDnumber{#1}}
 
 % Define the title page
-\setbeamertemplate{title page}{%
-  \vskip0pt plus 1filll%
+\setbeamertemplate{title page}{
+  \vskip0pt plus 1filll
   % Reposition the box in an inelegant way - but it works!
   \hspace{-12mm}
   \vspace{20mm}
-  \begin{beamercolorbox}[wd=0.72\textwidth,sep=10pt,leftskip=8mm]{title}%
+  \begin{beamercolorbox}[wd=0.72\textwidth,sep=10pt,leftskip=8mm]{title}
     {\usebeamerfont{title}\inserttitle}
-  
+
     {\usebeamerfont{subtitle}\insertsubtitle}
 
     {\usebeamerfont{subtitle}\@courseLabel}
-    
+
     {\usebeamerfont{author}\usebeamercolor[fg]{author}\textbf{\insertauthor} \ifdefempty{\@IDnumber}{}{(\@IDnumber)}}
-  
+
     {\usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate}
   \end{beamercolorbox}
 }
 
 % Define slide splitting dimensions (e.g. title and chapter slides)
-\newcommand{\TikzSplitSlide}[1]{%
-  \rule{0.56\paperwidth}{0pt}%
+% The default split background draws the theme's natural panel: a maincolor panel with the white department logo in the white theme, or a white panel with the maincolor logo in the inverted theme.
+
+% Path of the slanted right-hand panel, shared by the fill and the clip
+\newcommand{\dmpisa@splitpath}{
+  (-0.1\paperwidth,-0.5\paperheight) --
+  ( 0.5\paperwidth,-0.5\paperheight) --
+  ( 0.5\paperwidth, 0.5\paperheight) --
+  ( 0.1\paperwidth, 0.5\paperheight) -- cycle
+}
+
+% Draw the slanted panel on the right-hand side of the page
+% #1 = panel colour, #2 = department-logo colour
+\newcommand{\@splitpanel}[2]{
+  \fill[#1] \dmpisa@splitpath;
+  \node[anchor=south east, inner sep=0pt]
+    at (0.3\paperwidth, -0.46\paperheight) {\deptlogo{#2}};
+}
+
+% Draw a split background with explicit panel and department-logo colours
+% #1 = panel colour, #2 = logo colour
+\newcommand{\TikzSplitSlideColored}[2]{
+  \rule{0.56\paperwidth}{0pt}
   \begin{tikzpicture}
-    \clip (-0.1\paperwidth,-0.5\paperheight) -- 
-          ( 0.5\paperwidth,-0.5\paperheight) -- 
-          ( 0.5\paperwidth, 0.5\paperheight) -- 
-          ( 0.1\paperwidth, 0.5\paperheight) -- cycle; 
-    \node at (0.2\paperwidth,0) {%
-      \includegraphics[height=\paperheight]{#1}%
-    };
+    \clip \dmpisa@splitpath;
+    \@splitpanel{#1}{#2}
   \end{tikzpicture}
 }
 
-\newbool{splittitle}
+% Draw a split background using a graphic file
+\newcommand{\TikzSplitSlideImage}[1]{
+  \rule{0.56\paperwidth}{0pt}
+  \begin{tikzpicture}
+    \clip \dmpisa@splitpath;
+    \node at (0.2\paperwidth,0) {\includegraphics[height=\paperheight]{#1}};
+  \end{tikzpicture}
+}
+
+% Draw the default split background
+\newcommand{\dmpisa@splitbackground}{%
+  \ifdmpisa@inverted
+    \TikzSplitSlideColored{white}{maincolor}%
+  \else
+    \TikzSplitSlideColored{maincolor}{white}%
+  \fi
+}
+
+% Set the title background:
+% \titlebackground{<image>} sets a full-page background image.
+% \titlebackground* sets the theme's default split background panel.
+% \titlebackground*{<image>} clips the given image to the split view.
 \newcommand{\@TitleBackground}{}
 \newcommand{\titlebackground}{\@ifstar{\SplitBackground}{\FullBackground}}
-\newcommand{\FullBackground}[1]{\renewcommand{\@TitleBackground}{#1}}
-\newcommand{\SplitBackground}[1]{%
-	\booltrue{splittitle}%
-	\renewcommand{\@TitleBackground}{#1}%
+
+\newcommand{\FullBackground}[1]{%
+  \renewcommand{\@TitleBackground}{\includegraphics[height=\paperheight]{#1}}%
+}
+
+\newcommand{\SplitBackground}{%
+  \@ifnextchar\bgroup{\dmpisa@splitbackground@image}{\dmpisa@splitbackground@default}%
+}
+\newcommand{\dmpisa@splitbackground@default}{%
+  \renewcommand{\@TitleBackground}{\dmpisa@splitbackground}%
+}
+\newcommand{\dmpisa@splitbackground@image}[1]{%
+  \renewcommand{\@TitleBackground}{\TikzSplitSlideImage{#1}}%
 }
 
 % Overwrite the maketitle command for the title page
 \renewcommand{\maketitle}{
 \begingroup
   \ifdefempty{\@TitleBackground}{}{% Skip if \@TitleBackground is empty
-    \setbeamertemplate{background}{%
-      \ifbool{splittitle}{%
-        \TikzSplitSlide{\@TitleBackground}
-      }{% Normal, full-screen background
-        \includegraphics[height=\paperheight]{\@TitleBackground}
-      }
-    }
+    \setbeamertemplate{background}{\@TitleBackground}
   }
-  \begin{frame}%
-  \titlepage%
-  \end{frame}%
+  \begin{frame}
+  \titlepage
+  \end{frame}
 \endgroup
 }
 
@@ -218,20 +359,35 @@
     }{}
 \makeatother
 
+\makeatletter
 % Define chapter environment
+% Chapters always use the style opposite to the document. An explicit colour keeps the dark treatment.
 \newenvironment{chapter}[3][]{% Args: image (optional), color, frame title
   \begingroup
-  \themecolor{main}
-  \setbeamertemplate{footline}{}
-  \ifstrempty{#2}{
-    \setbeamercolor{frametitle}{fg=white}
-    \setbeamercolor{normal text}{fg=white,bg=maincolor}
-  }{
-    \setbeamercolor{frametitle}{fg=white}
+  % Chapters always use the style opposite to the document; flipping the theme here also resolves to the opposite split background panel below.
+  \ifdmpisa@inverted
+    \themecolor{white}
+  \else
+    \themecolor{main}
+  \fi
+  % An explicit colour forces the dark chapter treatment and colours the department wordmark
+  \ifstrempty{#2}{}{
+    \themecolor{main}
     \setbeamercolor{normal text}{fg=white,bg=#2}
   }
-  \ifstrempty{#1}{}{\setbeamertemplate{background}{\TikzSplitSlide{#1}}}
-  \setbeamertemplate{frametitle}{%
+  \setbeamertemplate{footline}{}
+  % Without an image, use the split background opposite to the chapter body.
+  % An explicit colour also becomes the colour of the department wordmark.
+  \ifstrempty{#1}{
+    \ifstrempty{#2}{
+      \setbeamertemplate{background}{\dmpisa@splitbackground}
+    }{
+      \setbeamertemplate{background}{\TikzSplitSlideColored{white}{#2}}
+    }
+  }{
+    \setbeamertemplate{background}{\TikzSplitSlideImage{#1}}
+  }
+  \setbeamertemplate{frametitle}{
     \vspace*{8ex}
     \begin{beamercolorbox}[wd=0.45\textwidth]{frametitle}
       \usebeamerfont{frametitle}\insertframetitle\\
@@ -239,32 +395,33 @@
     \end{beamercolorbox}
   }
   \begin{frame}{#3}
-  \hspace*{0.05\textwidth}%
-  \minipage{0.35\textwidth}%
-  \usebeamercolor[fg]{normal text}%
-}{%
+  \hspace*{0.05\textwidth}
+  \minipage{0.35\textwidth}
+  \usebeamercolor[fg]{normal text}
+}{
   \endminipage
   \end{frame}
   \endgroup
 }
+\makeatother
 
 % Define sidepic environment
 \newenvironment{sidepic}[2]{% Args: image, frame title
   \begingroup
-  \setbeamertemplate{background}{%
-  \hspace*{0.6\paperwidth}%
+  \setbeamertemplate{background}{
+  \hspace*{0.6\paperwidth}
   \includegraphics[height=\paperheight]{#1}%
   }
   \setbeamertemplate{frametitle}{% Same as normal, but with right skip
     \vspace*{-3.5ex}
-    \begin{beamercolorbox}[leftskip=2cm,rightskip=0.4\textwidth]{frametitle}%
+    \begin{beamercolorbox}[leftskip=2cm,rightskip=0.4\textwidth]{frametitle}
       \usebeamerfont{frametitle}\insertframetitle\\
       \usebeamerfont{framesubtitle}\insertframesubtitle
     \end{beamercolorbox}
   }
   \begin{frame}{#2}
-  \minipage{0.6\textwidth}%
-}{%
+  \minipage{0.6\textwidth}
+}{
   \endminipage
   \end{frame}
   \endgroup
@@ -274,16 +431,17 @@
 \newcommand{\backmatter}[1][]{
 \begingroup
   \themecolor{main}
-  \begin{frame}[c]
+  \begin{frame}[c,noframenumbering]
     \centering
     \begin{minipage}{\textwidth}
       \usebeamercolor[fg]{normal text}
       \centering
       \ifstrequal{#1}{notitle}{}{
         \Huge \inserttitle
+
         \vspace{5mm}
       }
-      \\\Large \textsl{Thank you for listening! \\ Any questions?}
+      \Large \textsl{Thank you for listening! \\ Any questions?}
     \end{minipage}
   \end{frame}
 \endgroup
@@ -301,16 +459,21 @@
 }
 
 % style of section presented in the table of contents
-\setbeamertemplate{section in toc}{$\blacktriangleright$~\inserttocsection}
+\setbeamertemplate{section in toc}{~\inserttocsection}
 
-% automate subtitle of each frame
+% automate subtitle of each frame (only after the first section)
 \makeatletter
-    \pretocmd\beamer@checkframetitle{\framesubtitle{\thesection \, \secname}}
+    \pretocmd\beamer@checkframetitle{
+        \ifnum\value{section}>0
+            \framesubtitle{\thesection \, \secname}
+        \fi
+    }
 \makeatother
 
 % avoid numbering of frames that are breaked into multiply slides
 \setbeamertemplate{frametitle continuation}{}
 
+% Headerless theorem style
 \makeatletter
 \ifbeamer@headerlesstheorems
 \setbeamertemplate{theorem begin}

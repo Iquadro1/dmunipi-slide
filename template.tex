@@ -2,13 +2,23 @@
 \usepackage{amsfonts,amsmath,oldgerm}
 \usetheme{dmpisa} % Here the call to the beamer theme
 
+% The theme derives every colour from maincolor. Pick one of the named
+% colours defined in dmpisacolor.sty, or define your own maincolor.
+\colorlet{maincolor}{burgundy}
+% \definecolor{maincolor}{RGB}{135, 200, 200}
+
+% \themecolor{main} % Select the slide style: white (default) or maincolor
+
 %%
 \newcommand{\testcolor}[1]{\colorbox{#1}{\textcolor{#1}{test}}~\texttt{#1}}
 \usefonttheme[onlymath]{serif}
-\titlebackground*{assets/background}
+% The starred version splits the title background: with no argument
+% it draws the panel matching the current theme, or pass the name
+% of a graphic file
+\titlebackground*
 \newcommand{\hrefcol}[2]{\textcolor{cyan}{\href{#1}{#2}}}
 
-\title{The \LaTeX\, Beamer \texttt{dmpisa} theme}
+\title{The \texorpdfstring{\LaTeX}{LaTeX} Beamer \texorpdfstring{\texttt{dmpisa}}{dmpisa} theme}
 \subtitle{Template with explanation of the main features}
 \course{Bachelor, master, Ph.D., and Research}
 \author{\href{mailto:fabio.durastante@unipi.it}{Fabio Durastante}}
@@ -88,11 +98,11 @@ To set a typical title page, you call some commands in the preamble:
 \end{block}
 You can then write out the title page with \verb|\maketitle|.
 
-To set a \textbf{background image} use the \verb|\titlebackground| command 
-before \verb|\maketitle|; its only argument is the name (or path) of a graphic 
+To set a \textbf{background image} use the \verb|\titlebackground| command
+before \verb|\maketitle|; its only argument is the name (or path) of a graphic
 file.
 
-If you use the \textbf{starred version} \verb|\titlebackground*|, the image 
+If you use the \textbf{starred version} \verb|\titlebackground*|, the image
 will be clipped to a split view on the right side of the title slide.
 
 \end{frame}
@@ -208,10 +218,40 @@ preamble} with \verb|\themecolor{white}| (default) or \verb|\themecolor{main}|
       \item Default is no footline; you can restore it with 
       \verb|\footlinecolor{}|
       \item Others may work, but no guarantees!
-      \item Should \emph{not} be used with the \verb|maincolor| theme!
       \end{itemize}
 \end{itemize}
 \end{frame}
+
+% A transparent footline can still show a payoff. Without an argument the
+% default "author | title" text is used; \footlinesubtitletrue appends the
+% document subtitle to it. The same effect can be enabled globally with
+% \usetheme[footlinesubtitle]{dmpisa}.
+\footlinecolor{}
+\footlinepayoff*
+\footlinesubtitletrue
+\begin{frame}[fragile]{The Footline}
+\framesubtitle{Options and defaults}
+\begin{itemize}
+\item By default the footline is transparent and shows only the frame number
+\item \verb|\footlinecolor{color}| colours it and adds the payoff
+      (\verb+author | title+)
+\item \verb|\footlinecolor{}| makes it transparent again and removes the payoff
+\item \verb|\footlinepayoff*| restores the default payoff on a transparent
+      footline; \verb|\footlinepayoff{text}| replaces it with custom text
+\item \verb|\footlinesubtitletrue| appends the document subtitle to the default
+      payoff (or enable it globally with
+      \verb|\usetheme[footlinesubtitle]{dmpisa}|)
+\end{itemize}
+\begin{block}{Code for This Footline}
+\begin{verbatim}
+\footlinecolor{}
+\footlinepayoff*
+\footlinesubtitletrue
+\end{verbatim}
+\end{block}
+\end{frame}
+\footlinesubtitlefalse
+\footlinecolor{sintefyellow}
 
 \begin{frame}[fragile]{Blocks}
 \begin{columns}
@@ -248,10 +288,10 @@ The ``official'' colours of colour blocks are: \testcolor{sinteflilla},
 \begin{itemize}[<alert@2>]
   \item You can use colours with the
         \verb|\textcolor{<color name>}{text}| command
-  \item The colours are defined in the \texttt{sintefcolor} package:
+  \item The colours are defined in the \texttt{dmpisacolor} package:
   \begin{itemize}
   \item Primary colours: \testcolor{maincolor} and its sidekick 
-  \testcolor{sintefgrey}
+  \testcolor{secondcolor}
   \item Three shades of green: \testcolor{sinteflightgreen}, 
   \testcolor{sintefgreen}, \testcolor{sintefdarkgreen}
   \item Additional colours: \testcolor{sintefyellow}, \testcolor{sintefred}, 
@@ -315,7 +355,7 @@ And this the second
 \end{block}
 \end{frame}
 
-\begin{chapter}[assets/background_negative]{}{Special Slides}
+\begin{chapter}{}{Special Slides}
 \begin{itemize}
 \item Chapter slides
 \item Side-picture slides
@@ -326,6 +366,9 @@ And this the second
 \begin{frame}[fragile]{Chapter slides}
 \begin{itemize}
 \item Similar to \verb|frame|s, but with a few more options
+\item Chapter slides always use the style opposite to the document theme:
+      dark in the white theme, light in the inverted theme
+\item An explicit colour keeps the dark treatment and colours the wordmark
 \item Opened with \verb|\begin{chapter}[<image>]{<color>}{<title>}|
 \item Image is optional, colour and title are mandatory
 \item There are seven ``official'' colours: \testcolor{maincolor}, 
@@ -338,7 +381,6 @@ And this the second
       \item It may still be a nice touch to change the footline of following 
       slides to the same color of a chapter slide. Your choice.
       \end{itemize}
-\item Otherwise, \verb|chapter| behaves just like \verb|frame|.
 \end{itemize}
 \end{frame}
 
@@ -373,7 +415,7 @@ them)}}
 \begin{itemize}
 \item To insert a final slide with the title and final thanks, use \verb|\backmatter|.
       \begin{itemize}
-      \item The title also appears in footlines along with the author name, you can change this text with \verb|\footlinepayoff|
+      \item The title also appears in footlines along with the author name, you can change this text with \verb|\footlinepayoff{...}|
       \item You can remove the title from the final slide with \verb|\backmatter[notitle]|
       \end{itemize}
 \item The aspect ratio defaults to 16:9, and you should not change it to 4:3
@@ -388,6 +430,110 @@ them)}}
 \end{itemize}
 \end{frame}
 
+% Colours and backgrounds
+\section{Colours and Backgrounds}
+
+% Only used to demonstrate the custom colour on this slide; the code block
+% shows the command that would redefine maincolor in a real document.
+\definecolor{custommain}{RGB}{135, 200, 200}
+\begin{frame}[fragile]{Changing the Colours}
+\begin{itemize}
+\item Every coloured element is derived from \texttt{maincolor}
+\item Pick one of the named colours in the preamble with
+      \verb|\colorlet{maincolor}{<name>}|:
+      \begin{itemize}
+      \item \testcolor{unipiblue} (default), \testcolor{burgundy},
+            \testcolor{forestgreen}, \testcolor{imperialpurple}, \testcolor{deepteal},
+            \testcolor{terracotta}, \testcolor{slategrey}
+      \item Any colour defined in the \texttt{xcolor} package
+      \end{itemize}
+\item For any other colour, redefine \texttt{maincolor}; the block tint and
+      the logos follow automatically
+\end{itemize}
+\begin{columns}
+      \begin{column}{0.7\textwidth}
+            \begin{block}{Code for a Custom Colour}
+            \begin{verbatim}\definecolor{maincolor}{RGB}{135, 200, 200}
+            \end{verbatim}
+            \end{block}
+      \end{column}
+      \begin{column}{0.3\textwidth}
+              \colorbox{custommain}{\textcolor{white}{\small\bfseries maincolor}}
+              
+              \colorbox{custommain!6!white}{\textcolor{darkgray}{\small block tint}}
+              
+              \vspace{1em}
+              $\vcenter{\hbox{\deptlogo[0.2\paperwidth]{custommain}}}$
+      \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Title and Chapter Backgrounds}
+\begin{itemize}
+\item \verb|\titlebackground{<image>}| puts a full-page image behind the
+      title slide
+\item The starred version \verb|\titlebackground*{<image>}| clips the image
+      to a split view on the right
+\item Without an image, \verb|\titlebackground*| draws the theme's natural panel
+      (a \texttt{maincolor} panel with the white logo normally, or a white panel
+      with the \texttt{maincolor} logo in the inverted style)
+\item Without an image, chapters use the opposite split background
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Logos}
+\begin{itemize}
+\item Use \verb|\dynamicshield{<color>}| to draw the shield in a given colour
+\item Use \verb|\deptlogo[<width>]{<color>}| to draw the department wordmark
+      (default width: \verb|0.3\paperwidth|)
+\end{itemize}
+\begin{columns}
+      \begin{column}{0.7\textwidth}
+            \begin{block}{Code for a Custom Logo}
+            \begin{verbatim}
+\deptlogo[0.4\paperwidth]{maincolor}
+\dynamicshield{white}
+            \end{verbatim}
+            \end{block}
+      \end{column}
+      \begin{column}{0.3\textwidth}
+      \begin{center}
+      $\vcenter{\hbox{\deptlogo[0.26\paperwidth]{maincolor}}}$
+
+      \vspace{1em}
+      $\vcenter{\hbox{\colorbox{maincolor}{\dynamicshield{white}}}}$
+      \end{center}
+      \end{column}
+\end{columns}
+\end{frame}
+
+% Render this frame in the inverted style, then restore the white style so the
+% following section highlights and summary are unaffected.
+\themecolor{main}
+\begin{frame}[fragile]{Inverted Slides}
+\usebeamercolor[fg]{normal text}
+\begin{itemize}
+\item The \textbf{slide style} is selected in the preamble with
+      \verb|\themecolor{white}| (default) or \verb|\themecolor{main}|
+\item In the \texttt{main} style the background becomes \texttt{maincolor},
+      the text and the shield become white, and blocks and footline follow
+\item The title page adapts automatically: the title, subtitle, author and
+      date turn white, and \verb|\titlebackground*| becomes a
+      white-panel split
+\item Chapter slides flip to light, remaining the opposite of the title page
+\item This slide is itself rendered in the \texttt{main} style and switches
+      back to \texttt{white} afterwards; do not normally switch inside the
+      document
+\end{itemize}
+\begin{block}{Code for an Inverted Presentation}
+\begin{verbatim}
+\themecolor{main}
+\themecolor{white}
+\end{verbatim}
+\end{block}
+\end{frame}
+\themecolor{white}
+
 \section{Summary}
 
 \begin{frame}
@@ -401,4 +547,3 @@ them)}}
 
 \backmatter
 \end{document}
-
