@@ -1,16 +1,16 @@
 # dmunipi-slide
 
-Beamer Theme for the Mathematics Department of the University of Pisa.
+Beamer Theme for the Mathematics Department of the University of Pisa. This is a fork of [dmunipi-slide](https://github.com/Cirdans-Home/dmunipi-slide) from [Fabio Durastante](https://github.com/Cirdans-Home).
 
 ## How to obtain
 
 If you are a git and ssh enthusiast:
 ```
-git clone git@github.com:Cirdans-Home/dmunipi-slide.git
+git clone git@github.com:Iquadro1/dmunipi-slide.git
 ```
 If you are a git enthusiast:
 ```
-git clone https://github.com/Cirdans-Home/dmunipi-slide.git
+git clone https://github.com/Iquadro1/dmunipi-slide.git
 ```
 In all the other cases, from the releases column on the right it is possible to
 obtain a `.zip` or `.tar.gz` archive with all the material.
@@ -19,7 +19,7 @@ obtain a `.zip` or `.tar.gz` archive with all the material.
 
 The template has been tested with
 ```
-pdfTeX 3.141592653-2.6-1.40.23 (TeX Live 2021)
+pdfTeX 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian)
 ```
 but it should work reasonably with all recent versions of LaTeX and the Beamer package.
 
